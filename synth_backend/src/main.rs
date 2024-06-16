@@ -1,8 +1,11 @@
+use actix_cors::Cors;
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use hound;
 use rodio::{Decoder, OutputStream, source::Source};
 use std::f32::consts::PI;
 use std::fs::File;
 use std::io::BufReader;
+use std::sync::{Arc, Mutex};
 
 const SAMPLE_RATE: u32 = 44100;
 const AMPLITUDE: f32 = 0.5;
@@ -51,7 +54,18 @@ fn apply_envelope(t: f32, duration: f32, adsr: &ADSR) -> f32 {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn play_sound(data: web::Data<AppState>) -> impl Responder {
+    let mut is_playing = data.is_playing.lock().unwrap();
+
+    if *is_playing {
+        return HttpResponse::TooManyRequests().body("Sound is already playing");
+    }
+
+    *is_playing = true;
+
+    // Release the lock before playing sound to avoid holding the mutex for the entire duration
+    drop(is_playing);
+
     let spec = hound::WavSpec {
         channels: 1,
         sample_rate: SAMPLE_RATE,
@@ -59,7 +73,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         sample_format: hound::SampleFormat::Int,
     };
 
-    let mut writer = hound::WavWriter::create("sounds/sine_wave.wav", spec)?;
+    let mut writer = hound::WavWriter::create("sounds/sine_wave.wav", spec).unwrap();
     let frequency = 440.0; // A4 note
     let duration = 2.0; // in seconds
     let waveform = Waveform::Sine; // Change to desired waveform
@@ -73,18 +87,48 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         previous_sample = filtered_sample;
         let amplitude = apply_envelope(time, duration, &adsr);
         let sample = (AMPLITUDE * amplitude * filtered_sample * i16::MAX as f32) as i16;
-        writer.write_sample(sample)?;
+        writer.write_sample(sample).unwrap();
     }
-    writer.finalize()?;
+    writer.finalize().unwrap();
 
     // Play the generated WAV file
-    let (_stream, stream_handle) = OutputStream::try_default()?;
-    let file = BufReader::new(File::open("sounds/sine_wave.wav")?);
-    let source = Decoder::new(file)?.convert_samples();
-    stream_handle.play_raw(source)?;
+    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+    let file = BufReader::new(File::open("sounds/sine_wave.wav").unwrap());
+    let source = Decoder::new(file).unwrap().convert_samples();
+    stream_handle.play_raw(source).unwrap();
 
     // Keep the program running long enough to play the sound
     std::thread::sleep(std::time::Duration::from_secs(duration as u64 + 1));
 
-    Ok(())
+    // Acquire the lock again to update the is_playing status
+    let mut is_playing = data.is_playing.lock().unwrap();
+    *is_playing = false;
+
+    HttpResponse::Ok().body("Playing sound")
+}
+
+struct AppState {
+    is_playing: Mutex<bool>,
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let app_state = web::Data::new(AppState {
+        is_playing: Mutex::new(false),
+    });
+
+    HttpServer::new(move || {
+        App::new()
+            .app_data(app_state.clone())
+            .wrap(
+                Cors::default()
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header()
+            )
+            .route("/play_sound", web::post().to(play_sound))
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
 }
