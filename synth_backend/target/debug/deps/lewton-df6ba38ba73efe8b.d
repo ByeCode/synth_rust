@@ -1,0 +1,13 @@
+/home/omu/Codespace/test/rust/synth_rust/synth_backend/target/debug/deps/liblewton-df6ba38ba73efe8b.rmeta: /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/lib.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/header.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/header_cached.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/huffman_tree.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/imdct.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/audio.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/bitpacking.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/inside_ogg.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/samples.rs
+
+/home/omu/Codespace/test/rust/synth_rust/synth_backend/target/debug/deps/lewton-df6ba38ba73efe8b.d: /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/lib.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/header.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/header_cached.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/huffman_tree.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/imdct.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/audio.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/bitpacking.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/inside_ogg.rs /home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/samples.rs
+
+/home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/lib.rs:
+/home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/header.rs:
+/home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/header_cached.rs:
+/home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/huffman_tree.rs:
+/home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/imdct.rs:
+/home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/audio.rs:
+/home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/bitpacking.rs:
+/home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/inside_ogg.rs:
+/home/omu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/lewton-0.10.2/src/samples.rs:
