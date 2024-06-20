@@ -1633,6 +1633,8 @@ dependencies = [
  "actix-web",
  "hound",
  "rodio",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

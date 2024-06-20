@@ -2,15 +2,15 @@ use actix_cors::Cors;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use hound;
 use rodio::{Decoder, OutputStream, source::Source};
+use serde::{Deserialize, Serialize};
 use std::f32::consts::PI;
 use std::fs::File;
 use std::io::BufReader;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
-const SAMPLE_RATE: u32 = 44100;
 const AMPLITUDE: f32 = 0.5;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Deserialize)]
 enum Waveform {
     Sine,
     Square,
@@ -33,11 +33,21 @@ fn low_pass_filter(input: f32, previous_output: f32, cutoff: f32, sample_rate: f
     alpha * input + (1.0 - alpha) * previous_output
 }
 
+#[derive(Deserialize)]
 struct ADSR {
     attack: f32,
     decay: f32,
     sustain: f32,
     release: f32,
+}
+
+#[derive(Deserialize)]
+struct Params {
+    sample_rate: u32,
+    frequency: f32,
+    duration: f32,
+    waveform: Waveform,
+    adsr: ADSR,
 }
 
 fn apply_envelope(t: f32, duration: f32, adsr: &ADSR) -> f32 {
@@ -54,7 +64,7 @@ fn apply_envelope(t: f32, duration: f32, adsr: &ADSR) -> f32 {
     }
 }
 
-async fn play_sound(data: web::Data<AppState>) -> impl Responder {
+async fn play_sound(data: web::Data<AppState>, params: web::Json<Params>) -> impl Responder {
     let mut is_playing = data.is_playing.lock().unwrap();
 
     if *is_playing {
@@ -68,24 +78,20 @@ async fn play_sound(data: web::Data<AppState>) -> impl Responder {
 
     let spec = hound::WavSpec {
         channels: 1,
-        sample_rate: SAMPLE_RATE,
+        sample_rate: params.sample_rate,
         bits_per_sample: 16,
         sample_format: hound::SampleFormat::Int,
     };
 
     let mut writer = hound::WavWriter::create("sounds/sine_wave.wav", spec).unwrap();
-    let frequency = 440.0; // A4 note
-    let duration = 2.0; // in seconds
-    let waveform = Waveform::Sine; // Change to desired waveform
-    let adsr = ADSR { attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.5 };
     let mut previous_sample = 0.0;
 
-    for t in 0..(SAMPLE_RATE as f32 * duration) as u32 {
-        let time = t as f32 / SAMPLE_RATE as f32;
-        let raw_sample = generate_sample(time, frequency, &waveform); // Pass reference to waveform
-        let filtered_sample = low_pass_filter(raw_sample, previous_sample, 500.0, SAMPLE_RATE as f32);
+    for t in 0..(params.sample_rate as f32 * params.duration) as u32 {
+        let time = t as f32 / params.sample_rate as f32;
+        let raw_sample = generate_sample(time, params.frequency, &params.waveform);
+        let filtered_sample = low_pass_filter(raw_sample, previous_sample, 500.0, params.sample_rate as f32);
         previous_sample = filtered_sample;
-        let amplitude = apply_envelope(time, duration, &adsr);
+        let amplitude = apply_envelope(time, params.duration, &params.adsr);
         let sample = (AMPLITUDE * amplitude * filtered_sample * i16::MAX as f32) as i16;
         writer.write_sample(sample).unwrap();
     }
@@ -98,7 +104,7 @@ async fn play_sound(data: web::Data<AppState>) -> impl Responder {
     stream_handle.play_raw(source).unwrap();
 
     // Keep the program running long enough to play the sound
-    std::thread::sleep(std::time::Duration::from_secs(duration as u64 + 1));
+    std::thread::sleep(std::time::Duration::from_secs(params.duration as u64 + 1));
 
     // Acquire the lock again to update the is_playing status
     let mut is_playing = data.is_playing.lock().unwrap();
